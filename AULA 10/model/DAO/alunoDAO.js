@@ -5,8 +5,38 @@
  * Versão: 1.0
  *********************************************************************************************************/
 
+// Import da bibilioteca do prisma client
+var { PrismaClient } = require('@prisma/client')
+
+// Instancia da classe PrismaClient
+var prisma = new PrismaClient()
+
 // Inserir dados do aluno no Banco de Dados
-const insertAluno = function(dadosAluno){
+const insertAluno = async function(dadosAluno){
+
+    // ScriptSQL para inserir dados
+    let sql = `insert into tbl_aluno (
+                        nome,
+                        rg,
+                        cpf,
+                        data_nascimento,
+                        email
+                        ) values (
+                        '${dadosAluno.nome}',
+                        '${dadosAluno.rg}',
+                        '${dadosAluno.cpf}',
+                        '${dadosAluno.data_nascimento}',
+                        '${dadosAluno.email}'
+                        )`
+
+    // Executa o scriptSQL no BD
+    let resultStatus = await prisma.$executeRawUnsafe(sql)
+
+    if (resultStatus) {
+        return true
+    } else {
+        return false
+    }
 
 }
 
@@ -22,12 +52,6 @@ const deleteAluno = function(id){
 
 // Retornar todos os alunos do Banco de Dados
 const selectAllAlunos = async function(){
-
-    // Import da bibilioteca do prisma client
-    let { PrismaClient } = require('@prisma/client')
-
-    // Instancia da classe PrismaClient
-    let prisma = new PrismaClient()
 
     // ScriptSQL para buscar todos os itens no BD
     let sql = 'select * from tbl_aluno'
@@ -49,12 +73,6 @@ const selectAllAlunos = async function(){
 const selectByIdAluno = async function(id){
 
     let idAluno = id
-    
-    // Import da bibilioteca do prisma client
-    let { PrismaClient } = require('@prisma/client')
-
-    // Instancia da classe PrismaClient
-    let prisma = new PrismaClient()
 
     // ScriptSQL para buscar todos os itens no BD
     let sql = 'select * from tbl_aluno where id=' + idAluno
@@ -77,12 +95,6 @@ const selectByNameAluno = async function(name){
 
     let nomeAluno = name
 
-    // Import da bibilioteca do prisma client
-    let { PrismaClient } = require('@prisma/client')
-
-    // Instancia da classe PrismaClient
-    let prisma = new PrismaClient()
-
     // ScriptSQL para buscar todos os itens no BD
     let sql = `select * from tbl_aluno where nome like '%${nomeAluno}%'`
 
@@ -102,5 +114,6 @@ const selectByNameAluno = async function(name){
 module.exports = {
     selectAllAlunos,
     selectByIdAluno,
-    selectByNameAluno
+    selectByNameAluno,
+    insertAluno
 }
