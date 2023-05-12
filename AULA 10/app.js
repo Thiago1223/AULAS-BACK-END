@@ -58,14 +58,8 @@ app.use((request, response, next) => {
         // Recebe os dados da controller do aluno
         let dadosAluno = await controllerAluno.getAlunos()
 
-        // Valida se existe registros de aluno
-        if (dadosAluno) {
-            response.status(200)
-            response.json(dadosAluno)
-        } else {
-            response.status(404)
-            response.json()
-        }
+        response.status(dadosAluno.status)
+        response.json(dadosAluno)
 
     })
 
@@ -77,14 +71,8 @@ app.use((request, response, next) => {
         // Recebe os dados da controller do aluno
         let dadosAluno = await controllerAluno.getBuscarAlunoID(idAluno)
 
-        // Valida se existe registros de aluno
-        if (dadosAluno) {
-            response.status(200)
-            response.json(dadosAluno)
-        } else {
-            response.status(404)
-            response.json()
-        }
+        response.status(dadosAluno.status)
+        response.json(dadosAluno)
 
     })
 
@@ -163,12 +151,8 @@ app.use((request, response, next) => {
         // Encaminha os dados para a controller
         let resultDadosAluno = await controllerAluno.deletarAluno(idAluno)
 
-        if (resultDadosAluno.length != 0) {
-            response.status(resultDadosAluno.status)
-            response.json(resultDadosAluno)
-        } else {
-            message.ERROR_INVALID_ID_NOT_FOUND
-        }
+        response.status(resultDadosAluno.status)
+        response.json(resultDadosAluno)
         
     })
 

@@ -28,7 +28,15 @@ const inserirAluno = async function(dadosAluno){
 
         // Valida se o BD inseriu corretamente os dados
         if (resultDadosAluno) {
-            return message.SUCCESS_CREATED_ITEM // Status code 201
+
+            // Chama a função que vai encontrar o ID gerado após o insert
+            let novoAluno = await alunoDAO.selectLastId()
+            
+            let dadosAlunosJSON = {}
+            dadosAlunosJSON.status = message.SUCCESS_CREATED_ITEM.status
+            dadosAlunosJSON.aluno = novoAluno
+
+            return dadosAlunosJSON
         } else {
             return message.ERROR_INTERNAL_SERVER // Status code 500
         }
@@ -54,24 +62,34 @@ const atualizarAluno = async function(dadosAluno, idAluno){
         // Adiciona o id do aluno no JSON dos dados
         dadosAluno.id = idAluno
 
-        // Encaminha os dados para a model do aluno
-        let resultDadosAluno = await alunoDAO.updateAluno(dadosAluno)
+        let statusId = await alunoDAO.selectByIdAluno(idAluno)
 
-        if (resultDadosAluno) {
-            return message.SUCCESS_UPDATED_ITEM // Status code 200
+        if (statusId) {
+            // Encaminha os dados para a model do aluno
+            let resultDadosAluno = await alunoDAO.updateAluno(dadosAluno)
+
+            if (resultDadosAluno) {
+                let dadosAlunosJSON = {}
+
+                dadosAlunosJSON.status = message.SUCCESS_UPDATED_ITEM.status
+                dadosAlunosJSON.aluno = dadosAluno
+
+                return dadosAlunosJSON
+            } else {
+                return message.ERROR_INTERNAL_SERVER // Status code 500
+            }
         } else {
-            return message.ERROR_INTERNAL_SERVER // Status code 500
+            return message.ERROR_NOT_FOUND
         }
     }
-
 }
 
 // Excluir um aluno existente
 const deletarAluno = async function(idAluno){
 
-    let buscarAluno = await getBuscarAlunoID(idAluno)
+    let statusId = await alunoDAO.selectByIdAluno(idAluno)
 
-    if (buscarAluno) {
+    if (statusId) {
         // Validação de IF incorreto ou não informado
         if (idAluno == '' || idAluno == undefined || isNaN(idAluno)) {
             return message.ERROR_INVALID_ID // Status code 400
@@ -80,7 +98,7 @@ const deletarAluno = async function(idAluno){
             let resultDadosAluno = await alunoDAO.deleteAluno(idAluno)
 
             if (resultDadosAluno) {
-                return message.SUCCESS_DELETE_ITEM // Status code 200
+                return message.SUCCESS_DELETED_ITEM // Status code 200
             } else {
                 return message.ERROR_INTERNAL_SERVER // Status code 500
             }
@@ -101,11 +119,12 @@ const getAlunos = async function(){
 
     if (dadosAluno) {
         // Criando um JSON com o atributo alunos, para encaminhar um array de alunos
+        dadosAlunosJSON.status = message.SUCESS_REQUEST.status
         dadosAlunosJSON.quantidade = dadosAluno.length
         dadosAlunosJSON.alunos = dadosAluno
         return dadosAlunosJSON
     } else {
-        return false
+        return message.ERROR_NOT_FOUND
     }
 
 }
@@ -115,17 +134,23 @@ const getBuscarAlunoID = async function(id){
 
     let idAluno = id
 
-    let dadosAlunosJSON = {}
-
-    // Chama a função do arquivo DAO que irá retornar todos os registros do BD
-    let dadosAluno = await alunoDAO.selectByIdAluno(idAluno)
-
-    if (dadosAluno) {
-        // Criando um JSON com o atributo alunos, para encaminhar um array de alunos
-        dadosAlunosJSON.alunos = dadosAluno
-        return dadosAlunosJSON
+    // Validação do ID
+    if (idAluno == '' || idAluno == undefined || isNaN(idAluno)) {
+        return message.ERROR_INVALID_ID
     } else {
-        return false
+        let dadosAlunosJSON = {}
+
+        // Chama a função do arquivo DAO que irá retornar todos os registros do BD
+        let dadosAluno = await alunoDAO.selectByIdAluno(idAluno)
+
+        if (dadosAluno) {
+            // Criando um JSON com o atributo alunos, para encaminhar um array de alunos
+            dadosAlunosJSON.status = message.SUCESS_REQUEST.status
+            dadosAlunosJSON.alunos = dadosAluno
+            return dadosAlunosJSON
+        } else {
+            return message.ERROR_NOT_FOUND
+        }
     }
 
 }
